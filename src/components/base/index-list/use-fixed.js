@@ -65,9 +65,10 @@ export function useFixed (props) {
       listHeight.value.push(height)
     }
   }
+
   function onScroll (pos) { // 需要防抖节流
     scrollY.value = -pos.y
   }
 
-  return { fixedTitle, groupRef, onScroll, fixedStyle }
+  return { fixedTitle, groupRef, onScroll, fixedStyle, currIndex }
 }

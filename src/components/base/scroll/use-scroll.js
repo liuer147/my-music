@@ -20,4 +20,6 @@ export function useScroll (elemRef, options, emit) {
   onUnmounted(() => {
     scroll.value.destroy()
   })
+
+  return scroll
 }
