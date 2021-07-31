@@ -1,3 +1,3 @@
 export const currentSong = state => {
-  return state.playList[state.currentIndex]
+  return state.playlist[state.currentIndex] || {} // 是为了在取不到值的时候不为undefined
 }
