@@ -16,3 +16,9 @@ function swap (arr, i, j) {
   arr[i] = arr[j]
   arr[j] = t
 }
+
+export function formatTime (time) {
+  const min = (((time / 60) | 0) + '').padStart(2, '0')
+  const sec = (((time % 60) | 0) + '').padStart(2, '0')
+  return `${min}:${sec}`
+}

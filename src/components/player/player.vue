@@ -11,30 +11,52 @@
         <h1 class="title">{{ currentSong.name }}</h1>
         <h2 class="subtitle">{{ currentSong.singer }}</h2>
       </div>
-      <div class="operators">
-        <div class="icon i-left">
-          <i :class="modeIcon" @click="changeMode" />
+      <div class="middle">
+        <div class="record_wrapper">
+          <div class="record_content">
+            <img class="record_img playing" :class="recordCls" :src="currentSong.pic" />
+          </div>
         </div>
-        <div class="icon i-left" :class="disableCls">
-          <i class="icon-prev" @click="handlePrev" />
+      </div>
+      <div class="bottom">
+        <div class="progress-bar-wrapper">
+          <span class="time">{{ formatTime(currentTime) }}</span>
+          <div class="progress">
+            <ProgressBar
+              :progress="progress"
+              @time-changing="onTimeChanging"
+              @time-changed="onTimeChanged"
+            />
+          </div>
+          <span class="time">{{ formatTime(currentSong.duration) }}</span>
         </div>
-        <div class="icon i-center" :class="disableCls">
-          <i :class="playIcon" @click="togglePlay" />
-        </div>
-        <div class="icon i-right" :class="disableCls">
-          <i class="icon-next" @click="handleNext" />
-        </div>
-        <div class="icon i-right">
-          <i :class="favoriteCls" @click="handleFavorite" />
+        <div class="operators">
+          <div class="icon i-left">
+            <i :class="modeIcon" @click="changeMode" />
+          </div>
+          <div class="icon i-left" :class="disableCls">
+            <i class="icon-prev" @click="handlePrev" />
+          </div>
+          <div class="icon i-center" :class="disableCls">
+            <i :class="playIcon" @click="togglePlay" />
+          </div>
+          <div class="icon i-right" :class="disableCls">
+            <i class="icon-next" @click="handleNext" />
+          </div>
+          <div class="icon i-right">
+            <i :class="favoriteCls" @click="handleFavorite" />
+          </div>
         </div>
       </div>
     </div>
     <audio
       ref="audioRef"
       @pause="handlePause"
+      @play="handlePlay"
       @canplay="handleReady"
       @error="handleError"
       @ended="handleEnded"
+      @timeupdate="updateTime"
     />
   </div>
 </template>
@@ -44,16 +66,23 @@ import { computed, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode.js'
 import useFavorite from './use-favorite.js'
+import useRecord from './use-record.js'
 import { PLAY_MODE } from '../../assets/js/constant.js'
+import { formatTime } from '../../assets/js/util.js'
+import ProgressBar from './progress-bar.vue'
 export default {
   name: 'player',
+  components: { ProgressBar },
   setup () {
     const store = useStore()
     const audioRef = ref(null)
     const songReady = ref(false)
+    const currentTime = ref(0)
+    let touching = false
+
     const { modeIcon, changeMode } = useMode()
     const { favoriteCls, handleFavorite } = useFavorite()
-
+    const { recordCls } = useRecord()
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
@@ -62,6 +91,8 @@ export default {
 
     const playIcon = computed(() => playing.value ? 'icon-pause' : 'icon-play')
     const disableCls = computed(() => songReady.value ? '' : 'disable') // 对于其他函数改变的数据有关，可以使用computed
+    const progress = computed(() => currentTime.value / currentSong.value.duration)
+
     watch(currentSong, newSong => {
       if (!newSong.id || !newSong.url) {
         return
@@ -91,6 +122,12 @@ export default {
     function handlePause () { // 由于前面已经监听playing的状态，所以在考虑暂停的时候应该，以修改数据的情况来间接修改图标
       store.commit('setPlayingState', false)
     }
+    function handlePlay () { // 此处是处理其他原因导致歌曲播放情况
+      if (playing.value === true) {
+        return
+      }
+      store.commit('setPlayingState', true)
+    }
     function handlePrev () {
       const list = playlist.value
       if (!songReady.value || !list.length) {
@@ -114,6 +151,7 @@ export default {
       if (!songReady.value || !list.length) {
         return
       }
+      currentTime.value = 0
       if (list.length === 1) {
         loop()
       } else {
@@ -145,6 +183,23 @@ export default {
       const playMode = computed(() => store.state.playMode)
       playMode.value === PLAY_MODE.loop ? loop() : handleNext()
     }
+    function updateTime (e) { // 别忘了切换歌曲时，currentTime置0
+      if (touching) {
+        return
+      }
+      currentTime.value = e.target.currentTime
+    }
+    function onTimeChanging (prog) {
+      // console.log(prog)
+      touching = true
+      currentTime.value = currentSong.value.duration * prog
+      // console.log(currentTime.value)
+    }
+    function onTimeChanged (prog) {
+      console.log('end')
+      touching = false
+      audioRef.value.currentTime = currentTime.value = currentSong.value.duration * prog
+    }
     return {
       audioRef,
       fullScreen,
@@ -153,6 +208,7 @@ export default {
       playIcon,
       togglePlay,
       handlePause,
+      handlePlay,
       handlePrev,
       handleNext,
       handleReady,
@@ -162,7 +218,14 @@ export default {
       changeMode,
       favoriteCls,
       handleFavorite,
-      handleEnded
+      handleEnded,
+      progress,
+      updateTime,
+      currentTime,
+      formatTime,
+      onTimeChanging,
+      onTimeChanged,
+      recordCls
     }
   }
 }
@@ -225,37 +288,88 @@ export default {
       }
     }
   }
-  .operators {
-    display: flex;
+  .middle {
+    position: fixed;
+    width: 100%;
+    top: 80px;
+    bottom: 170px;
+    .record_wrapper {
+      width: 100%;
+      height: 0;
+      padding-bottom: 80%;
+      position: relative;
+      .record_content {
+        position: absolute;
+        left: 10%;
+        top: 0;
+        width: 80%;
+        height: 100%;
+        .record_img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 10px solid rgba(255, 255, 255, 0.1);
+          box-sizing: border-box;
+        }
+        .playing {
+          animation: rotate 20s linear infinite;
+        }
+        .play-pause {
+          animation-play-state: paused;
+        }
+      }
+    }
+  }
+  .bottom {
     position: fixed;
     bottom: 50px;
     width: 100%;
-    align-items: center;
-    .icon {
-      flex: 1;
-      color: $color-theme;
-      &.disable {
-        color: $color-theme-d;
+    .progress-bar-wrapper {
+      width: 80%;
+      display: flex;
+      margin: 0 auto;
+      padding: 10px 0;
+      .progress {
+        flex: 1 0 40px;
+        margin: 0 5px;
       }
-      i {
-        font-size: 30px;
-      }
-    }
-    .i-left {
-      text-align: right;
-    }
-    .i-center {
-      padding: 0 20px;
-      text-align: center;
-      i {
-        font-size: 40px;
+      .time {
+        width: 40px;
+        height: 30px;
+        line-height: 32px;
+        text-align: center;
+        font-size: $font-size-small;
       }
     }
-    .i-right {
-      text-align: left;
-    }
-    .icon-favorite {
-      color: $color-sub-theme;
+    .operators {
+      display: flex;
+      align-items: center;
+      .icon {
+        flex: 1;
+        color: $color-theme;
+        &.disable {
+          color: $color-theme-d;
+        }
+        i {
+          font-size: 30px;
+        }
+      }
+      .i-left {
+        text-align: right;
+      }
+      .i-center {
+        padding: 0 20px;
+        text-align: center;
+        i {
+          font-size: 40px;
+        }
+      }
+      .i-right {
+        text-align: left;
+      }
+      .icon-favorite {
+        color: $color-sub-theme;
+      }
     }
   }
 }
