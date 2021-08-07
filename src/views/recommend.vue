@@ -31,7 +31,7 @@
 <script>
 import { getRecommend } from '@/service/recommend.js'
 import Slider from '@/components/base/slider/slider.vue'
-import Scroll from '@/components/base/scroll/scroll.vue'
+import Scroll from '@/components/wrap-scroll/wrap-scroll.js'
 export default {
   name: 'recommend',
   data () {

@@ -1,7 +1,7 @@
 <template>
   <div class="progress-bar">
     <!-- 对于块级元素，其宽度默认就是100%所以不用再特意设置 -->
-    <div class="iner-bar">
+    <div class="iner-bar" @click="handleClick">
       <div class="progressed" :style="progressStl" />
       <div
         class="btn-wrapper"
@@ -41,10 +41,12 @@ export default {
       return `transform: translate3d(${this.offset}px,0,0)`
     }
   },
+  /**
+   * ~组件实例中操作组件dom的方法在调用时需要在nextTick()之后！！
+   *  */
   watch: {
     progress (newProgress) {
-      const barWidth = this.$el.offsetWidth - progressBtnWidth
-      this.offset = Math.max(0, Math.min(barWidth, barWidth * newProgress))
+      this.setOffset(newProgress)
     }
   },
   created () {
@@ -60,6 +62,10 @@ export default {
   },
   */
   methods: {
+    setOffset (progress) {
+      const barWidth = this.$el.offsetWidth - progressBtnWidth
+      this.offset = Math.max(0, Math.min(barWidth, barWidth * progress))
+    },
     onTouchStart (e) {
       // console.log(e.touches[0])
       // console.log(this.offset)
@@ -87,6 +93,13 @@ export default {
       const barWidth = this.$el.offsetWidth - progressBtnWidth
       const progress = Math.min(1, Math.max(0, this.offset / barWidth))
       this.$emit('time-changed', progress)
+    },
+    handleClick (e) {
+      const x = e.offsetX
+      const barWidth = this.$el.offsetWidth - progressBtnWidth
+      const progress = Math.min(1, Math.max(0, x / barWidth))
+      this.offset = barWidth * progress
+      this.$emit('time-changed', progress)
     }
   }
 }
@@ -95,6 +108,7 @@ export default {
 <style lang="scss" scoped>
 .progress-bar {
   height: 30px;
+  position: relative;
   .iner-bar {
     position: relative;
     height: 4px;

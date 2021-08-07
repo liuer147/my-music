@@ -15,7 +15,7 @@
 
 <script>
 import { getSingerList } from '@/service/singer.js'
-import indexList from '../components/base/index-list/index-list.vue'
+import indexList from '@/components/index-list/index-list.vue'
 import { SINGER_KEY } from '@/assets/js/constant.js'
 import storage from 'good-storage'
 

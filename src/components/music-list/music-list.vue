@@ -8,30 +8,30 @@
       <div class="filter" />
       <div class="play-btn-wrapper" v-show="showBtn">
         <div v-show="songs.length > 0" class="play-btn" @click="random">
-          <i class="icon-play"/>
+          <i class="icon-play" />
           <span class="text">随机播放全部</span>
         </div>
       </div>
     </div>
-    <scroll
+    <Scroll
       class="list"
       :style="scrollStyle"
       v-loading="loading"
       :probe-type="3"
       @scroll="onScroll"
-      v-no-result='noResult'
+      v-no-result="noResult"
     >
       <div class="song-list-wrapper">
         <SongList :songs="songs" @select="selectItem" />
       </div>
-    </scroll>
+    </Scroll>
   </div>
 </template>
 
 <script>
-import Scroll from '../base/scroll/scroll.vue'
+import Scroll from '../wrap-scroll/wrap-scroll.js'
 import SongList from '../base/song-list/song-list.vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 const TITLE_HEIGHT = 40
 
 export default {
@@ -90,13 +90,18 @@ export default {
       }
     },
     scrollStyle () {
+      const bottom = this.playlist.length ? '60px' : ''
       return {
-        top: `${this.imgHeight}px`
+        top: `${this.imgHeight}px`,
+        bottom
       }
     },
     noResult () {
       return !this.loading && !this.songs.length
-    }
+    },
+    ...mapState([
+      'playlist'
+    ])
   },
   mounted () {
     this.imgHeight = this.$refs.bgImg.offsetHeight
@@ -165,33 +170,33 @@ export default {
     background-size: cover;
     // z-index: 10;
     .play-btn-wrapper {
-        position: absolute;
-        bottom: 20px;
-        z-index: 10;
-        width: 100%;
-        .play-btn {
-          box-sizing: border-box;
-          width: 135px;
-          padding: 7px 0;
-          margin: 0 auto;
-          text-align: center;
-          border: 1px solid $color-theme;
-          color: $color-theme;
-          border-radius: 100px;
-          font-size: 0;
-        }
-        .icon-play {
-          display: inline-block;
-          vertical-align: middle;
-          margin-right: 6px;
-          font-size: $font-size-medium-x;
-        }
-        .text {
-          display: inline-block;
-          vertical-align: middle;
-          font-size: $font-size-small;
-        }
+      position: absolute;
+      bottom: 20px;
+      z-index: 10;
+      width: 100%;
+      .play-btn {
+        box-sizing: border-box;
+        width: 135px;
+        padding: 7px 0;
+        margin: 0 auto;
+        text-align: center;
+        border: 1px solid $color-theme;
+        color: $color-theme;
+        border-radius: 100px;
+        font-size: 0;
       }
+      .icon-play {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 6px;
+        font-size: $font-size-medium-x;
+      }
+      .text {
+        display: inline-block;
+        vertical-align: middle;
+        font-size: $font-size-small;
+      }
+    }
     .filter {
       position: absolute;
       top: 0;

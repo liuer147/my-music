@@ -30,3 +30,38 @@ export function changeMode ({ commit, state, getters }, mode) {
   commit('setCurrentIndex', index)
   commit('setPlayMode', mode)
 }
+
+export function removeSong ({ commit, state }, song) {
+  const sequenceList = state.sequenceList.slice()
+  const playlist = state.playlist.slice()
+
+  const seqIndex = sequenceList.findIndex(item => item.id === song.id)
+  const playIndex = playlist.findIndex(item => item.id === song.id)
+
+  if (seqIndex < 0 || playIndex < 0) {
+    console.warn('removeSong: 越界！')
+  }
+
+  sequenceList.splice(seqIndex, 1)
+  playlist.splice(playIndex, 1)
+
+  let currIndex = state.currentIndex
+  console.log('currentIndex: ', currIndex, 'playIndex: ', playIndex)
+  if (playIndex < currIndex) {
+    currIndex--
+  } else {
+    currIndex %= playlist.length
+  }
+
+  commit('setSequenceList', sequenceList)
+  commit('setPlaylist', playlist)
+  commit('setCurrentIndex', currIndex)
+  // commit('s') 当playlist.length === 0时，设置播放状态为false
+}
+
+export function clearSong ({ commit, state }) {
+  commit('setSequenceList', [])
+  commit('setPlaylist', [])
+  commit('setCurrentIndex', 0)
+  // commit('s') 设置播放状态为false
+}

@@ -1,5 +1,5 @@
 <template>
-  <scroll class="index-list" :probe-type="3" @scroll="onScroll" ref="scrollRef">
+  <Scroll class="index-list" :probe-type="3" @scroll="onScroll" ref="scrollRef">
     <ul ref="groupRef">
       <li v-for="group of singers" :key="group.title" class="group">
         <h2 class="title">{{ group.title }}</h2>
@@ -31,15 +31,15 @@
         </li>
       </ul>
     </div>
-  </scroll>
+  </Scroll>
 </template>
 
 <script>
-import scroll from '../scroll/scroll.vue'
+import Scroll from '../wrap-scroll/wrap-scroll.js'
 import { useFixed } from './use-fixed.js'
 import { useShotcut } from './use-shotcut.js'
 export default {
-  components: { scroll },
+  components: { Scroll },
   name: 'index-list',
   props: {
     singers: {

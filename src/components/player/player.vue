@@ -1,54 +1,74 @@
 <template>
   <div class="player">
-    <div class="normal-player" v-show="fullScreen">
-      <div class="background">
-        <img :src="currentSong.pic" />
-      </div>
-      <div class="top">
-        <div class="back" @click="goBack">
-          <i class="icon-back"></i>
+    <transition name="slide-bottom">
+      <div class="normal-player" ref="playerRef" v-show="fullScreen" style :style="gestureStyle">
+        <div class="background">
+          <img :src="currentSong.pic" />
         </div>
-        <h1 class="title">{{ currentSong.name }}</h1>
-        <h2 class="subtitle">{{ currentSong.singer }}</h2>
-      </div>
-      <div class="middle">
-        <div class="record_wrapper">
-          <div class="record_content">
-            <img class="record_img playing" :class="recordCls" :src="currentSong.pic" />
+        <div class="top">
+          <div class="back" @click.stop.prevent="goBack">
+            <i class="icon-back"></i>
           </div>
+          <h1 class="title">{{ currentSong.name }}</h1>
+          <h2 class="subtitle">{{ currentSong.singer }}</h2>
         </div>
-      </div>
-      <div class="bottom">
-        <div class="progress-bar-wrapper">
-          <span class="time">{{ formatTime(currentTime) }}</span>
-          <div class="progress">
-            <ProgressBar
-              :progress="progress"
-              @time-changing="onTimeChanging"
-              @time-changed="onTimeChanged"
-            />
-          </div>
-          <span class="time">{{ formatTime(currentSong.duration) }}</span>
-        </div>
-        <div class="operators">
-          <div class="icon i-left">
-            <i :class="modeIcon" @click="changeMode" />
-          </div>
-          <div class="icon i-left" :class="disableCls">
-            <i class="icon-prev" @click="handlePrev" />
-          </div>
-          <div class="icon i-center" :class="disableCls">
-            <i :class="playIcon" @click="togglePlay" />
-          </div>
-          <div class="icon i-right" :class="disableCls">
-            <i class="icon-next" @click="handleNext" />
-          </div>
-          <div class="icon i-right">
-            <i :class="favoriteCls" @click="handleFavorite" />
+        <div
+          class="middle"
+          @touchstart.prevent='onTouchstart'
+          @touchmove.prevent='onTouchmove'
+          @touchend.prevent='onTouchend(playerHeight, goBack)'
+        >
+          <div class="record_wrapper">
+            <div class="record_content">
+              <img
+                class="record_img playing"
+                :class="recordCls"
+                :src="currentSong.pic"
+              />
+            </div>
           </div>
         </div>
+        <div class="bottom">
+          <div class="progress-bar-wrapper">
+            <span class="time">{{ formatTime(currentTime) }}</span>
+            <div class="progress">
+              <ProgressBar
+                :progress="progress"
+                @time-changing="onTimeChanging"
+                @time-changed="onTimeChanged(rootHeight)"
+                ref="barRef"
+              />
+            </div>
+            <span class="time">{{ formatTime(currentSong.duration) }}</span>
+          </div>
+          <div class="operators">
+            <div class="icon i-left">
+              <i :class="modeIcon" @click="changeMode" />
+            </div>
+            <div class="icon i-left" :class="disableCls">
+              <i class="icon-prev" @click="handlePrev" />
+            </div>
+            <div class="icon i-center" :class="disableCls">
+              <i :class="playIcon" @click="togglePlay" />
+            </div>
+            <div class="icon i-right" :class="disableCls">
+              <i class="icon-next" @click="handleNext" />
+            </div>
+            <div class="icon i-right">
+              <i
+                :class="favoriteCls(currentSong)"
+                @click="handleFavorite(currentSong)"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </transition>
+    <MiniPlayer
+      v-show="!fullScreen && playlist.length"
+      :togglePlay="togglePlay"
+      :playlist="playlist"
+    />
     <audio
       ref="audioRef"
       @pause="handlePause"
@@ -62,27 +82,34 @@
 </template>
 
 <script>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, provide, readonly, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import useMode from './use-mode.js'
 import useFavorite from './use-favorite.js'
 import useRecord from './use-record.js'
+import useGesture from './use-gesture.js'
 import { PLAY_MODE } from '../../assets/js/constant.js'
 import { formatTime } from '../../assets/js/util.js'
 import ProgressBar from './progress-bar.vue'
+import MiniPlayer from './mini-player.vue'
 export default {
   name: 'player',
-  components: { ProgressBar },
+  components: { ProgressBar, MiniPlayer },
   setup () {
     const store = useStore()
     const audioRef = ref(null)
     const songReady = ref(false)
+    const barRef = ref(null)
     const currentTime = ref(0)
     let touching = false
+    const playerRef = ref(null)
+    const playerHeight = ref(0)
 
     const { modeIcon, changeMode } = useMode()
     const { favoriteCls, handleFavorite } = useFavorite()
     const { recordCls } = useRecord()
+    const { onTouchstart, onTouchmove, onTouchend, gestureStyle } = useGesture()
+
     const fullScreen = computed(() => store.state.fullScreen)
     const currentSong = computed(() => store.getters.currentSong)
     const playing = computed(() => store.state.playing)
@@ -93,7 +120,12 @@ export default {
     const disableCls = computed(() => songReady.value ? '' : 'disable') // 对于其他函数改变的数据有关，可以使用computed
     const progress = computed(() => currentTime.value / currentSong.value.duration)
 
+    provide('songReady', readonly(songReady))
+
     watch(currentSong, newSong => {
+      if (playlist.value.length <= 0) {
+        store.commit('setPlayingState', false)
+      }
       if (!newSong.id || !newSong.url) {
         return
       }
@@ -102,12 +134,23 @@ export default {
       audioEl.src = newSong.url
       audioEl.play()
     })
+
     watch(playing, newPlaying => {
       const audioEl = audioRef.value
       if (!songReady.value) { // 当歌曲还未准备好播放时，直接返回
         return
       }
       newPlaying ? audioEl.play() : audioEl.pause()
+    })
+
+    watch(fullScreen, async newFullScreen => {
+      if (newFullScreen) {
+        await nextTick()
+        barRef.value.setOffset(progress.value)
+        if (!playerHeight.value) {
+          playerHeight.value = playerRef.value.offsetHeight
+        }
+      }
     })
 
     function goBack () {
@@ -205,6 +248,7 @@ export default {
       fullScreen,
       currentSong,
       goBack,
+      playlist,
       playIcon,
       togglePlay,
       handlePause,
@@ -225,7 +269,15 @@ export default {
       formatTime,
       onTimeChanging,
       onTimeChanged,
-      recordCls
+      recordCls,
+      barRef,
+      // gesture
+      playerRef,
+      playerHeight,
+      onTouchstart,
+      onTouchmove,
+      onTouchend,
+      gestureStyle
     }
   }
 }
@@ -250,7 +302,6 @@ export default {
       z-index: -1;
       opacity: 0.6;
       filter: blur(20px);
-
       img {
         width: 100%;
         height: 100%;
