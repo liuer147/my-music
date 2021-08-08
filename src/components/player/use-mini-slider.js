@@ -40,7 +40,6 @@ export default function useMiniSlider () {
             loop: true
           }
         })
-        console.log(sliderVal)
         sliderVal.on('slidePageChanged', ({ pageX }) => {
           store.commit('setCurrentIndex', pageX)
         })

@@ -6,6 +6,7 @@ export default function useGesture () {
   const gestureStyle = ref('')
   function onTouchstart (e) {
     touch.startY = e.touches[0].pageY
+    touch.startTime = Date.now()
   }
 
   function onTouchmove (e) {
@@ -16,6 +17,8 @@ export default function useGesture () {
 
   function onTouchend (rootHeight, hidden) {
     gestureStyle.value = 'transition: all .3s;'
+    const disTime = Date.now() - touch.startTime
+    disTime < 300 && distance.value > 100 && hidden()
     distance.value > (rootHeight / 2) && hidden()
     setTimeout(() => {
       gestureStyle.value = ''
