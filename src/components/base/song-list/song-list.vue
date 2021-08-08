@@ -1,9 +1,18 @@
 <template>
   <ul class="song-list">
-    <li v-for="(song, index) of songs" :key="song.id" class="song_item" @click="selectItem(song, index)">
+    <li
+      v-for="(song, index) of songs"
+      :key="song.id"
+      class="song_item"
+      @click="selectItem(song, index)"
+    >
+      <div class="rank" v-if="rank">
+        <span :class="getRankCls(index)">{{ getRankText(index) }}</span>
+      </div>
       <div class="content">
         <h2 class="name">{{ song.name }}</h2>
-        <p class="desc">{{ song.singer }}·{{ song.album}}</p><!-- 这个地方不能用computed -->
+        <p class="desc">{{ getDesc(song) }}</p>
+        <!-- 这个地方不能用computed -->
       </div>
     </li>
   </ul>
@@ -18,17 +27,35 @@ export default {
       default () {
         return []
       }
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   computed: { // 为什么此处不能使用computed？？？
-    getDesc (song) {
-      return `${song.singer}·${song.album}`
-    }
+  // !因为computed getter不能带有参数，若想带参数，只能换成函数
   },
   emits: ['select'],
   methods: {
     selectItem (song, index) {
       this.$emit('select', { song, index })
+    },
+    getDesc (song) {
+      return `${song.singer}·${song.album}`
+    },
+    getRankCls (index) {
+      if (index <= 2) {
+        return `icon icon${index}`
+      } else {
+        return 'text'
+      }
+    },
+    getRankText (index) {
+      if (index <= 2) {
+        return
+      }
+      return index + 1
     }
   }
 }
@@ -42,31 +69,31 @@ export default {
     box-sizing: border-box;
     height: 64px;
     font-size: $font-size-medium;
-    /* .rank {
-        flex: 0 0 25px;
+    .rank {
+      flex: 0 0 25px;
+      width: 25px;
+      margin-right: 20px;
+      text-align: center;
+      .icon {
+        display: inline-block;
         width: 25px;
-        margin-right: 20px;
-        text-align: center;
-        .icon {
-          display: inline-block;
-          width: 25px;
-          height: 24px;
-          background-size: 25px 24px;
-          &.icon0 {
-            @include bg-image('first');
-          }
-          &.icon1 {
-            @include bg-image('second');
-          }
-          &.icon2 {
-            @include bg-image('third');
-          }
+        height: 24px;
+        background-size: 25px 24px;
+        &.icon0 {
+          @include bg-image('first');
         }
-        .text {
-          color: $color-theme;
-          font-size: $font-size-large;
+        &.icon1 {
+          @include bg-image('second');
         }
-      } */
+        &.icon2 {
+          @include bg-image('third');
+        }
+      }
+      .text {
+        color: $color-theme;
+        font-size: $font-size-large;
+      }
+    }
     .content {
       flex: 1;
       line-height: 20px;

@@ -22,7 +22,7 @@
       v-no-result="noResult"
     >
       <div class="song-list-wrapper">
-        <SongList :songs="songs" @select="selectItem" />
+        <SongList :songs="songs" @select="selectItem" :rank="rank" />
       </div>
     </Scroll>
   </div>
@@ -49,7 +49,11 @@ export default {
     },
     title: String,
     pic: String,
-    loading: Boolean
+    loading: Boolean,
+    rank: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
