@@ -1,12 +1,13 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-import Recommend from '@/views/recommend.vue'
-import Singer from '@/views/singer.vue'
-import TopList from '@/views/top-list.vue'
-import Search from '@/views/search.vue'
-import SingerDetail from '@/views/singer-detail.vue'
-import Album from '@/views/album-detail.vue'
-import TopListDetail from '@/views/top-list-detail.vue'
+const Recommend = () => import('@/views/recommend.vue' /* webpackChunkName: "Recommend" */)
+const Singer = () => import('@/views/singer.vue' /* webpackChunkName: "Singer" */)
+const TopList = () => import('@/views/top-list.vue' /* webpackChunkName: "TopList" */)
+const Search = () => import('@/views/search.vue' /* webpackChunkName: "Search" */)
+const SingerDetail = () => import('@/views/singer-detail.vue' /* webpackChunkName: "SingerDetail" */)
+const Album = () => import('@/views/album-detail.vue' /* webpackChunkName: "Album" */)
+const TopListDetail = () => import('@/views/top-list-detail.vue' /* webpackChunkName: "TopListDetail" */)
+const User = () => import('@/views/user-center.vue' /* webpackChunkName: "userCenter" */)
 const routes = [
   {
     path: '/',
@@ -45,6 +46,12 @@ const routes = [
   {
     path: '/search',
     component: Search
+  },
+  {
+    path: '/user',
+    components: {
+      User
+    }
   }
 ]
 

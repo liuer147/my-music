@@ -10,6 +10,7 @@ export function selectPlay ({ commit }, { list, index }) {
   commit('setCurrentIndex', index)
 }
 export function randomPlay ({ commit }, { list }) {
+  console.log(list)
   commit('setPlayMode', PLAY_MODE.random)
   commit('setSequenceList', list)
   commit('setPlayingState', true)
@@ -64,4 +65,34 @@ export function clearSong ({ commit, state }) {
   commit('setPlaylist', [])
   commit('setCurrentIndex', 0)
   // commit('s') 设置播放状态为false
+}
+export function addSong ({ commit, state }, song) {
+  const playlist = state.playlist.slice()
+  const sequenceList = state.sequenceList.slice()
+  let currentIndex = state.currentIndex
+  const playIndex = findIndex(playlist, song)
+
+  if (playIndex > -1) {
+    currentIndex = playIndex
+  } else {
+    playlist.push(song)
+    currentIndex = playlist.length - 1
+  }
+
+  const sequenceIndex = findIndex(sequenceList, song)
+  if (sequenceIndex === -1) {
+    sequenceList.push(song)
+  }
+
+  commit('setSequenceList', sequenceList)
+  commit('setPlaylist', playlist)
+  commit('setCurrentIndex', currentIndex)
+  commit('setPlayingState', true)
+  commit('setFullScreen', true)
+}
+
+function findIndex (list, song) {
+  return list.findIndex((item) => {
+    return item.id === song.id
+  })
 }

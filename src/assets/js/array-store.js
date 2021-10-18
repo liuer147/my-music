@@ -33,3 +33,7 @@ export function remove (key, compare) {
   storage.set(key, list) // 别忘记保存到storage里面
   return list
 }
+
+export function saveAll(items, key) {
+  storage.set(key, items)
+}

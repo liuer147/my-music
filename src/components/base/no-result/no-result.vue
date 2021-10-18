@@ -8,10 +8,14 @@
 <script>
 export default {
   name: 'no-result',
-  props: {
-    title: {
-      type: String,
-      default: '抱歉,没找到歌曲'
+  data () {
+    return {
+      title: '抱歉,没找到歌曲'
+    }
+  },
+  methods: {
+    setTitle (newTitle) {
+      this.title = newTitle
     }
   }
 }

@@ -22,3 +22,16 @@ export function formatTime (time) {
   const sec = (((time % 60) | 0) + '').padStart(2, '0')
   return `${min}:${sec}`
 }
+
+export function deBounce (ms, callBack) {
+  let lock = true
+  return function (...args) {
+    if (lock === false) {
+      return
+    }
+    callBack.call(this, ...args)
+    setTimeout(() => {
+      lock = true
+    }, ms)
+  }
+}

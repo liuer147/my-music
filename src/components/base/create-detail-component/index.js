@@ -44,7 +44,7 @@ export default function createDetailComponent (name, KEY, getDataDetail) {
     async created () { // created()钩子函数是什么时候执行的？
       const computedData = this.computedData
       if (!computedData) {
-        const path = this.$route.matched[0].path // !这句话什么意思，知识点在哪里
+        const path = this.$route.matched[0].path
         this.$router.push({
           path
         })

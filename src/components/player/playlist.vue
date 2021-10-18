@@ -188,14 +188,14 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 99;
+  z-index: 499;
   background: rgba($color: #000000, $alpha: 0.2);
   .content_wrapper {
     position: absolute;
     left: 0;
     bottom: 0;
     width: 100%;
-    z-index: 199;
+    z-index: 599;
     background: $color-highlight-background;
     .top_content {
       padding: 20px 30px 10px 20px;
@@ -220,7 +220,7 @@ export default {
       }
     }
     .list_content {
-      height: 240px;
+      max-height: 240px;
       overflow: hidden;
       .item {
         display: flex;

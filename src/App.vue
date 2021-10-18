@@ -1,7 +1,18 @@
 <template>
   <MyHeader />
   <Tab />
-  <router-view :style="bottomStl"></router-view>
+  <router-view v-slot="{ Component }">
+    <keep-alive>
+      <component :is="Component" :style="bottomStl" />
+    </keep-alive>
+  </router-view>
+  <router-view name="User" v-slot="{ Component }">
+    <transition name="slide">
+      <keep-alive>
+        <component :is="Component" :style="bottomStl" />
+      </keep-alive>
+    </transition>
+  </router-view>
   <player></player>
 </template>
 
@@ -23,12 +34,9 @@ export default {
         bottom
       }
     },
-    ...mapState([
-      'playlist'
-    ])
+    ...mapState(['playlist'])
   }
 }
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>
