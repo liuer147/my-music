@@ -1,4 +1,16 @@
 # my-music
 
-## 介绍
-此项目为学习慕课网黄轶老师的课程所写...
+**项目图片**
+
+![recommend](https://github.com/liuer666/images/blob/main/my-music/recommend.png)
+
+![singer](https://github.com/liuer666/images/blob/main/my-music/singer.png)
+
+![singer-detail](https://github.com/liuer666/images/blob/main/my-music/singer-detail.png)
+
+![ranking](https://github.com/liuer666/images/blob/main/my-music/ranking.png)
+
+![rank-detail](https://github.com/liuer666/images/blob/main/my-music/rank-detail.png)
+
+![player](https://github.com/liuer666/images/blob/main/my-music/player.png)
+
