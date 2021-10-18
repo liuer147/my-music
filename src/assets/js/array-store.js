@@ -34,6 +34,6 @@ export function remove (key, compare) {
   return list
 }
 
-export function saveAll(items, key) {
+export function saveAll (items, key) {
   storage.set(key, items)
 }
