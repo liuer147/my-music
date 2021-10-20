@@ -53,10 +53,8 @@ export default {
   methods: {
     selectItem (item) {
       this.selectedTop = item
-      this.$router.push({
-        path: `/top-list/${item.id}`
-      })
-      console.log(item)
+      this.$router.push(`/top-list/${item.id}`)
+      // console.log('itemRanking: ', item)
     }
   }
 }

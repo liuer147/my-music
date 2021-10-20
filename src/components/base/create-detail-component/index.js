@@ -41,7 +41,7 @@ export default function createDetailComponent (name, KEY, getDataDetail) {
         return computedData && (computedData.name || computedData.title)
       }
     },
-    async created () { // created()钩子函数是什么时候执行的？
+    async created () {
       const computedData = this.computedData
       if (!computedData) {
         const path = this.$route.matched[0].path

@@ -1,9 +1,10 @@
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
 export default function useGesture () {
   const touch = {}
   const distance = ref(0)
   const gestureStyle = ref('')
+  let timer
   function onTouchstart (e) {
     touch.startY = e.touches[0].pageY
     touch.startTime = Date.now()
@@ -18,12 +19,17 @@ export default function useGesture () {
   function onTouchend (rootHeight, hidden) {
     gestureStyle.value = 'transition: all .3s;'
     const disTime = Date.now() - touch.startTime
+    // console.log('player:', distance.value,rootHeight)
     disTime < 300 && distance.value > 100 && hidden()
     distance.value > (rootHeight / 2) && hidden()
-    setTimeout(() => {
+    timer = setTimeout(() => {
       gestureStyle.value = ''
     }, 300)
   }
+
+  onUnmounted(() => {
+    window.clearTimeout(timer)
+  })
 
   return {
     onTouchstart,
